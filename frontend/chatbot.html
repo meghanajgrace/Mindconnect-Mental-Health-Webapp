@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindBuddy | Your Mental Health Companion</title>
+<style>
+  body {
+    background: linear-gradient(135deg, #b3e5fc, #e1bee7);
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  .chat-container {
+    width: 380px;
+    background: #ffffffcc;
+    border-radius: 20px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-header {
+    background-color: #90caf9;
+    color: #fff;
+    text-align: center;
+    padding: 15px;
+    font-size: 20px;
+    letter-spacing: 1px;
+  }
+  .chat-box {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .message {
+    padding: 10px 14px;
+    border-radius: 15px;
+    max-width: 80%;
+    line-height: 1.4;
+    font-size: 15px;
+    animation: fadeIn 0.3s ease;
+  }
+  .bot {
+    background-color: #e3f2fd;
+    align-self: flex-start;
+  }
+  .user {
+    background-color: #c8e6c9;
+    align-self: flex-end;
+  }
+  .input-area {
+    display: flex;
+    border-top: 1px solid #ddd;
+  }
+  .input-area input {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    border-radius: 0 0 0 20px;
+  }
+  .input-area button {
+    padding: 12px 20px;
+    background-color: #90caf9;
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    border-radius: 0 0 20px 0;
+    cursor: pointer;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="chat-container">
+  <div class="chat-header">🧠 MindBuddy</div>
+  <div id="chat-box" class="chat-box">
+    <div class="message bot">Hey there 👋 I’m MindBuddy, your personal wellness buddy! How are you feeling today?</div>
+  </div>
+  <div class="input-area">
+    <input type="text" id="user-input" placeholder="Type your message..." />
+    <button id="send">Send</button>
+  </div>
+</div>
+
+<script>
+  const chatBox = document.getElementById("chat-box");
+  const input = document.getElementById("user-input");
+  const sendBtn = document.getElementById("send");
+
+  sendBtn.addEventListener("click", sendMessage);
+  input.addEventListener("keypress", e => { if (e.key === "Enter") sendMessage(); });
+
+  function appendMessage(text, sender) {
+    const msg = document.createElement("div");
+    msg.classList.add("message", sender);
+    msg.innerText = text;
+    chatBox.appendChild(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function sendMessage() {
+    const userMsg = input.value.trim();
+    if (!userMsg) return;
+    appendMessage(userMsg, "user");
+    input.value = "";
+
+    setTimeout(() => {
+      const botReply = generateReply(userMsg);
+      appendMessage(botReply, "bot");
+    }, 700);
+  }
+
+  function generateReply(message) {
+    const msg = message.toLowerCase();
+
+    // Mood-based responses
+    if (msg.includes("sad") || msg.includes("depressed") || msg.includes("down")) {
+      return "I’m really sorry you feel this way 💙 You’re not alone. Want to share what’s been bothering you lately?";
+    }
+    if (msg.includes("happy") || msg.includes("great") || msg.includes("good")) {
+      return "That’s amazing! Keep embracing the good vibes 🌸 What made your day so nice?";
+    }
+    if (msg.includes("stress") || msg.includes("anxious") || msg.includes("nervous")) {
+      return "Take a deep breath 🕊 It’s okay to feel anxious sometimes. Would you like a quick relaxation tip?";
+    }
+    if (msg.includes("tired") || msg.includes("exhausted")) {
+      return "Seems like you’ve been working hard 😴 Don’t forget to rest and hydrate. Your mind deserves a break too!";
+    }
+
+    // 🚨 Emergency keywords (expanded)
+    const dangerWords = [
+      "suicide", "end my life", "kill myself", "self harm",
+      "hopeless", "worthless", "die", "cut", "hurt myself",
+      "pain", "end it", "give up", "can't take it anymore"
+    ];
+
+    if (dangerWords.some(word => msg.includes(word))) {
+      alert("🚨 ALERT: Message flagged as emergency.\n\nCounsellor has been notified.\n\nCounsellor: Mrs. Meera Rao\nPhone: +91 98765 43210\nEmail: meera.rao@college.edu\n\nPlease reach out immediately — you are not alone ❤️");
+      return "I’m deeply concerned about you 💔 Please reach out to Mrs. Meera Rao at +91 98765 43210 or email her at meera.rao@college.edu. You matter, and help is available right now. You’re not alone in this.";
+    }
+
+    // General friendly responses
+    const generalReplies = [
+      "I hear you 💬 Tell me more about what’s been on your mind.",
+      "That sounds interesting. How does that make you feel?",
+      "Your feelings are completely valid 🌷 I’m here with you.",
+      "Want to try a small relaxation exercise?",
+      "Remember to breathe slowly and relax your shoulders 💗"
+    ];
+    return generalReplies[Math.floor(Math.random() * generalReplies.length)];
+  }
+</script>
+</body>
+</html>
+
+

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindConnect Feed</title>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to bottom right, #b3e5fc, #e1f5fe);
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    header {
+      background-color: #4A90E2;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      font-size: 26px;
+      font-weight: 600;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      letter-spacing: 1px;
+    }
+
+    .feed-container {
+      padding: 20px;
+   max-width: 650px;
+      margin: auto;
+    }
+
+    /* Flashcards & video section stays same */
+    iframe {
+      width: 100%;
+      height: 315px;
+      border-radius: 16px;
+      border: none;
+      margin-top: 20px;
+    }
+
+    .flashcard {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      margin-top: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: 0.3s;
+    }
+
+    .flashcard:hover {
+      transform: scale(1.03);
+    }
+
+    /* ---- NEW STUDENT FEED SECTION ---- */
+
+    .post-input {
+      width: 100%;
+      height: 100px;
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid #90caf9;
+      font-size: 15px;
+      margin-top: 25px;
+      resize: none;
+    }
+
+    button {
+background-color: #4A90E2;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #357ABD;
+    }
+
+    .post-card {
+      background: white;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 15px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .username {
+      font-weight: 600;
+      color: #2e7d32;
+    }
+
+    .time {
+      font-size: 12px;
+      color: gray;
+    }
+
+    .edit-box {
+      margin-top: 10px;
+      display: none;
+    }
+
+   .edit-box textarea {
+      width: 100%;
+      height: 80px;
+      border-radius: 10px;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<header>🌿 MindConnect Feed</header>
+
+<div class="feed-container">
+
+  <!-- Existing flashcards + motivational videos -->
+  <div class="flashcard">
+    <h3>💬 "Your mind deserves rest too."</h3>
+    <p>Healing starts when you stop rushing your emotions — be patient with yourself.</p>
+  </div>
+
+  <iframe src="https://www.youtube.com/embed/8HYLyuJZKno" allowfullscreen></iframe>
+
+  <div class="flashcard">
+    <h3>🌼 Tip of the Day</h3>
+    <p>Step outside for a few minutes. Sunlight helps your mood and focus.</p>
+  </div>
+
+  <iframe src="https://www.youtube.com/embed/8Su5VtKeXU8" allowfullscreen></iframe>
+
+  <!-- 🌟 NEW STUDENT FEED SECTION STARTS HERE -->
+  <h2 style="margin-top:40px;color:#0d47a1;">📝 Student Posts</h2>
+
+  <textarea id="postInput" class="post-input" placeholder="Share your thoughts..."></textarea>
+ <button onclick="addPost()">Post</button>
+
+  <div id="feedArea"></div>
+
+</div>
+
+<script>
+  const username = "dbit";
+
+async function addPost() {
+  const text = document.getElementById("postInput").value.trim();
+  if (!text) return alert("Write something!");
+
+  await fetch("http://localhost:5000/feed/add", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, post: text })
+  });
+
+  document.getElementById("postInput").value = "";
+  loadPosts();
+}
+
+async function loadPosts() {
+  const res = await fetch("http://127.0.0.1:5000/feed/all");
+  const posts = await res.json();
+
+  const area = document.getElementById("feedArea");
+  area.innerHTML = "";
+
+  posts.forEach(p => {
+    area.innerHTML += `
+      <div class="post-card">
+        <div class="username">${p.username}</div>
+        <div class="time">${new Date(p.timestamp).toLocaleString()}</div>
+
+        <p id="text-${p._id}">${p.post}</p>
+
+        <button onclick="likePost('${p._id}')">❤ ${p.likes}</button>
+        <button onclick="showEdit('${p._id}')">✏ Edit</button>
+        <button onclick="deletePost('${p._id}')">🗑 Delete</button>
+
+        <div class="edit-box" id="editBox-${p._id}">
+          <textarea id="edit-${p._id}">${p.post}</textarea>
+          <button onclick="saveEdit('${p._id}')">💾 Save</button>
+ <button onclick="hideEdit('${p._id}')">❌ Cancel</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+async function likePost(id) {
+  await fetch(`http://127.0.0.1:5000/feed/like/${id}`, { method: "PUT" });
+  loadPosts();
+}
+
+function showEdit(id) {
+  document.getElementById(`editBox-${id}`).style.display = "block";
+}
+
+function hideEdit(id) {
+  document.getElementById(`editBox-${id}`).style.display = "none";
+}
+
+async function saveEdit(id) {
+  const newText = document.getElementById(`edit-${id}`).value.trim();
+
+  await fetch(`http://127.0.0.1:5000/feed/update/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ post: newText })
+  });
+
+  hideEdit(id);
+  loadPosts();
+}
+
+async function deletePost(id) {
+  if (!confirm("Delete this post?")) return;
+
+  await fetch(`http://127.0.0.1:5000/feed/delete/${id}`, { method: "DELETE" });
+  loadPosts();
+}
+
+loadPosts();
+</script>
+</body>
+</html>

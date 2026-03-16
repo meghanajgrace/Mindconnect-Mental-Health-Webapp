@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MindJournal | A Safe Space for You</title>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #d7e1ec, #f3e7e9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .journal-container {
+    background: rgba(255, 255, 255, 0.8);
+    width: 80%;
+    max-width: 800px;
+    border-radius: 25px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    backdrop-filter: blur(10px);
+  }
+
+  .journal-header {
+    text-align: center;
+    color: #5e548e;
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+
+  .subtext {
+    text-align: center;
+    color: #8d8aa1;
+    font-size: 15px;
+    margin-bottom: 25px;
+  }
+
+  textarea {
+    width: 100%;
+    height: 280px;
+    border: none;
+    resize: none;
+    padding: 20px;
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+    color: #333;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+    outline: none;
+  }
+
+  .button-group {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  button {
+    background: #a29bfe;
+    border: none;
+    padding: 12px 24px;
+    color: #fff;
+    font-size: 16px;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+
+  button:hover {
+    background: #6c5ce7;
+  }
+
+  .saved-message {
+    text-align: center;
+    color: #4caf50;
+    margin-top: 15px;
+    font-size: 15px;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  .show {
+    opacity: 1;
+  }
+
+  .quote {
+    text-align: center;
+    margin-top: 20px;
+    font-style: italic;
+    color: #555;
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+
+<div class="journal-container">
+  <div class="journal-header">🪶 MindJournal</div>
+  <div class="subtext">Write your thoughts, emotions, and gratitude here — this is your calm space 🌿</div>
+
+  <textarea id="journal" placeholder="Dear me, today I feel..."></textarea>
+
+  <div class="button-group">
+    <button id="saveBtn">💾 Save Entry</button>
+    <button id="clearBtn">🗑 Clear Journal</button>
+  </div>
+
+  <div id="message" class="saved-message">Saved successfully ✨</div>
+  <div class="quote" id="quote"></div>
+</div>
+
+<script>
+  const journal = document.getElementById("journal");
+  const saveBtn = document.getElementById("saveBtn");
+  const clearBtn = document.getElementById("clearBtn");
+  const message = document.getElementById("message");
+
+  // LOAD LAST JOURNAL ENTRY
+  async function loadJournal() {
+    const res = await fetch("http://127.0.0.1:5000/journal/all");
+    const data = await res.json();
+
+    if (data.length > 0) {
+      journal.value = data[data.length - 1].entry;
+    }
+  }
+  loadJournal();
+
+  // SAVE JOURNAL
+  saveBtn.addEventListener("click", async () => {
+    const entry = journal.value.trim();
+    if (!entry) return alert("Write something first 😊");
+
+    const res = await fetch("http://127.0.0.1:5000/journal/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ entry })
+    });
+
+    const result = await res.json();
+    if (result.message === "Journal saved") {
+      message.classList.add("show");
+      setTimeout(() => message.classList.remove("show"), 2000);
+    }
+  });
+
+  clearBtn.addEventListener("click", () => {
+    if (confirm("Are you sure you want to clear your journal?")) {
+      journal.value = "";
+    }
+  });
+
+  // Quotes
+  const quote = document.getElementById("quote");
+  const quotes = [
+    "“Healing doesn’t mean the damage never existed. It means it no longer controls your life.” 💜",
+    "“You don’t have to control your thoughts. You just have to stop letting them control you.” 🌸",
+    "“Small progress is still progress.” 🌼",
+    "“It’s okay to rest. You’re not behind.” ☁",
+    "“You’re doing your best, and that’s enough.” 💖"
+  ];
+  quote.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+</script>
+</body>
+</html>
